@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bill Splitter</title>
+
+  <!-- STYLE: how the page looks (colors, sizes, spacing) -->
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      background: #f4f1ea;
+      color: #222;
+      display: flex;
+      justify-content: center;
+      padding: 40px 16px;
+      margin: 0;
+    }
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 28px;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+    h1 { margin: 0 0 20px; font-size: 1.6rem; }
+    label { display: block; font-weight: 600; margin: 16px 0 6px; }
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      font-size: 1.1rem;
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    .tip-buttons { display: flex; gap: 8px; }
+    .tip-buttons button {
+      flex: 1;
+      font-size: 1rem;
+      padding: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background: white;
+      cursor: pointer;
+    }
+    .tip-buttons button.selected {
+      background: #2f6b4f;
+      color: white;
+      border-color: #2f6b4f;
+    }
+    .results {
+      margin-top: 24px;
+      padding: 16px;
+      background: #eef5f0;
+      border-radius: 12px;
+    }
+    .row { display: flex; justify-content: space-between; margin: 6px 0; }
+    .per-person { font-size: 1.5rem; font-weight: 700; color: #2f6b4f; }
+  </style>
+</head>
+<body>
+
+  <!-- CONTENT: what is on the page -->
+  <div class="card">
+    <h1>Bill Splitter</h1>
+
+    <label for="bill">Bill amount</label>
+    <input id="bill" type="number" min="0" step="0.01" placeholder="e.g. 450">
+
+    <label>Tip</label>
+    <div class="tip-buttons">
+      <button data-tip="0">0%</button>
+      <button data-tip="10" class="selected">10%</button>
+      <button data-tip="15">15%</button>
+      <button data-tip="20">20%</button>
+    </div>
+
+    <label for="people">Number of people</label>
+    <input id="people" type="number" min="1" step="1" value="2">
+
+    <div class="results">
+      <div class="row"><span>Tip</span><span id="tipAmount">0.00</span></div>
+      <div class="row"><span>Total</span><span id="total">0.00</span></div>
+      <div class="row per-person"><span>Each pays</span><span id="perPerson">0.00</span></div>
+    </div>
+  </div>
+
+  <!-- SCRIPT: what the page does (the calculation) -->
+  <script>
+    let tipPercent = 10;
+
+    // When a tip button is clicked: remember its value and highlight it
+    document.querySelectorAll(".tip-buttons button").forEach(function (button) {
+      button.addEventListener("click", function () {
+        document.querySelectorAll(".tip-buttons button").forEach(b => b.classList.remove("selected"));
+        button.classList.add("selected");
+        tipPercent = Number(button.dataset.tip);
+        calculate();
+      });
+    });
+
+    // Recalculate every time the user types
+    document.getElementById("bill").addEventListener("input", calculate);
+    document.getElementById("people").addEventListener("input", calculate);
+
+    function calculate() {
+      const bill = Number(document.getElementById("bill").value) || 0;
+      const people = Math.max(1, Number(document.getElementById("people").value) || 1);
+
+      const tip = bill * tipPercent / 100;
+      const total = bill + tip;
+      const perPerson = total / people;
+
+      document.getElementById("tipAmount").textContent = tip.toFixed(2);
+      document.getElementById("total").textContent = total.toFixed(2);
+      document.getElementById("perPerson").textContent = perPerson.toFixed(2);
+    }
+  </script>
+
+</body>
+</html>
