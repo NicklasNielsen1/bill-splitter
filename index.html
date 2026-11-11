@@ -7,86 +7,180 @@
 
   <!-- STYLE: how the page looks (colors, sizes, spacing) -->
   <style>
+    /* Colors used everywhere, in one place so they're easy to change */
+    :root {
+      --table: #3a2e28;   /* dark wood "restaurant table" behind the receipt */
+      --paper: #fbf8f1;   /* off-white receipt paper */
+      --ink: #2a2a2a;     /* printer ink */
+      --faded: #8a857c;   /* lighter ink for small print */
+    }
+
     body {
-      font-family: system-ui, sans-serif;
-      background: #f4f1ea;
-      color: #222;
+      margin: 0;
+      min-height: 100vh;
+      background: var(--table);
       display: flex;
       justify-content: center;
-      padding: 40px 16px;
-      margin: 0;
-    }
-    .card {
-      background: white;
-      border-radius: 16px;
-      padding: 28px;
-      width: 100%;
-      max-width: 380px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    }
-    h1 { margin: 0 0 20px; font-size: 1.6rem; }
-    label { display: block; font-weight: 600; margin: 16px 0 6px; }
-    input {
-      width: 100%;
+      align-items: flex-start;
+      padding: 48px 16px 64px;
       box-sizing: border-box;
-      font-size: 1.1rem;
-      padding: 10px 12px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
+      font-family: Consolas, "Courier New", monospace;
+      color: var(--ink);
     }
-    .tip-buttons { display: flex; gap: 8px; }
+
+    /* The wrapper casts the shadow (so it follows the torn edge) and tilts slightly */
+    .receipt-wrap {
+      width: 100%;
+      max-width: 360px;
+      filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.45));
+      transform: rotate(-0.8deg);
+    }
+
+    .receipt {
+      position: relative;
+      background: var(--paper);
+      padding: 28px 24px 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* Zig-zag torn bottom edge: a row of paper "teeth", each 16px wide */
+    .receipt::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -8px;
+      height: 8px;
+      background: conic-gradient(from 135deg at top, transparent 90deg, var(--paper) 0) 0 0 / 16px 100%;
+    }
+
+    h1 {
+      margin: 0;
+      text-align: center;
+      font-size: 1.5rem;
+      letter-spacing: 0.15em;
+    }
+    .subtitle, .date, .thanks { text-align: center; }
+    .subtitle { margin: 6px 0 2px; text-transform: none; }
+    .date { font-size: 0.8rem; color: var(--faded); }
+
+    .divider { border-top: 2px dashed var(--ink); margin: 16px 0; }
+    .divider.double { border-top: 4px double var(--ink); }
+
+    /* A row like:  TOTAL .......... 540.00 */
+    .row {
+      display: flex;
+      align-items: baseline;
+      margin: 10px 0;
+    }
+    .leader {
+      flex: 1;
+      border-bottom: 2px dotted var(--faded);
+      margin: 0 8px;
+      min-width: 16px;
+    }
+    label { font-weight: 700; }
+
+    /* Inputs: no boxes, just an underline, numbers right-aligned like prices */
+    input {
+      font: inherit;
+      color: inherit;
+      width: 110px;
+      text-align: right;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid var(--ink);
+      padding: 2px 0;
+      appearance: textfield;
+      -moz-appearance: textfield;
+    }
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    input:focus { outline: none; background: rgba(0, 0, 0, 0.05); }
+    input::placeholder { color: var(--faded); }
+
+    /* Tip buttons: small outlined "stamps"; the chosen one is filled with ink */
+    .tip-buttons { display: flex; gap: 6px; margin-top: 8px; }
     .tip-buttons button {
       flex: 1;
-      font-size: 0.95rem;
-      padding: 10px 0;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      background: white;
+      font: inherit;
+      font-size: 0.85rem;
+      text-transform: inherit;
+      letter-spacing: inherit;
+      padding: 8px 0;
+      background: transparent;
+      color: var(--ink);
+      border: 2px solid var(--ink);
+      border-radius: 2px;
       cursor: pointer;
     }
-    .tip-buttons button.selected {
-      background: #2f6b4f;
-      color: white;
-      border-color: #2f6b4f;
+    .tip-buttons button:hover { background: rgba(0, 0, 0, 0.06); }
+    .tip-buttons button.selected { background: var(--ink); color: var(--paper); }
+
+    .custom-row { justify-content: flex-end; }
+    .custom-row[hidden] { display: none; }
+
+    .per-person { font-size: 1.6rem; font-weight: 700; margin: 14px 0 6px; }
+    .per-person .leader { border-bottom-width: 3px; border-color: var(--ink); }
+
+    .thanks { margin-top: 18px; letter-spacing: 0.3em; font-weight: 700; }
+    .small-print { text-align: center; font-size: 0.7rem; color: var(--faded); margin-top: 4px; }
+
+    /* On narrow phone screens: no tilt, a bit less padding */
+    @media (max-width: 420px) {
+      body { padding-top: 24px; }
+      .receipt-wrap { transform: none; }
+      .receipt { padding: 24px 16px 18px; }
     }
-    #customTip { margin-top: 8px; }
-    .results {
-      margin-top: 24px;
-      padding: 16px;
-      background: #eef5f0;
-      border-radius: 12px;
-    }
-    .row { display: flex; justify-content: space-between; margin: 6px 0; }
-    .per-person { font-size: 1.5rem; font-weight: 700; color: #2f6b4f; }
   </style>
 </head>
 <body>
 
   <!-- CONTENT: what is on the page -->
-  <div class="card">
-    <h1>Bill Splitter</h1>
+  <div class="receipt-wrap">
+    <div class="receipt">
+      <h1>Bill Splitter</h1>
+      <div class="subtitle" id="tableFor">~ table for 2 ~</div>
+      <div class="date" id="date"></div>
 
-    <label for="bill">Bill amount</label>
-    <input id="bill" type="number" min="0" step="0.01" placeholder="e.g. 450">
+      <div class="divider"></div>
 
-    <label>Tip</label>
-    <div class="tip-buttons">
-      <button data-tip="0">0%</button>
-      <button data-tip="10" class="selected">10%</button>
-      <button data-tip="15">15%</button>
-      <button data-tip="20">20%</button>
-      <button data-tip="custom">Custom</button>
-    </div>
-    <input id="customTip" type="number" min="0" step="0.5" placeholder="Tip % (e.g. 12)" hidden>
+      <div class="row">
+        <label for="bill">Bill</label><span class="leader"></span>
+        <input id="bill" type="number" min="0" step="0.01" placeholder="0.00">
+      </div>
 
-    <label for="people">Number of people</label>
-    <input id="people" type="number" min="1" step="1" value="2">
+      <div class="row"><label>Tip</label></div>
+      <div class="tip-buttons">
+        <button data-tip="0">0%</button>
+        <button data-tip="10" class="selected">10%</button>
+        <button data-tip="15">15%</button>
+        <button data-tip="20">20%</button>
+        <button data-tip="custom">Custom</button>
+      </div>
+      <div class="row custom-row" id="customRow" hidden>
+        <label for="customTip">Tip %</label><span class="leader"></span>
+        <input id="customTip" type="number" min="0" step="0.5" placeholder="12">
+      </div>
 
-    <div class="results">
-      <div class="row"><span>Tip</span><span id="tipAmount">0.00</span></div>
-      <div class="row"><span>Total</span><span id="total">0.00</span></div>
-      <div class="row"><span>Extra from rounding up</span><span id="roundingExtra">0.00</span></div>
-      <div class="row per-person"><span>Each pays</span><span id="perPerson">0</span></div>
+      <div class="row">
+        <label for="people">Guests</label><span class="leader"></span>
+        <input id="people" type="number" min="1" step="1" value="2">
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="row"><span>Tip</span><span class="leader"></span><span id="tipAmount">0.00</span></div>
+      <div class="row"><span>Total</span><span class="leader"></span><span id="total">0.00</span></div>
+      <div class="row"><span>Rounding</span><span class="leader"></span><span id="roundingExtra">0.00</span></div>
+
+      <div class="divider double"></div>
+
+      <div class="row per-person"><span>Each pays</span><span class="leader"></span><span id="perPerson">0</span></div>
+
+      <div class="thanks">Thank you!</div>
+      <div class="small-print">Shares rounded up to whole numbers</div>
     </div>
   </div>
 
@@ -94,6 +188,11 @@
   <script>
     let tipPercent = 10;
     const customTip = document.getElementById("customTip");
+    const customRow = document.getElementById("customRow");
+
+    // Print today's date and time at the top, like a real receipt
+    document.getElementById("date").textContent =
+      new Date().toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
 
     // When a tip button is clicked: remember its value and highlight it
     document.querySelectorAll(".tip-buttons button").forEach(function (button) {
@@ -103,11 +202,11 @@
 
         if (button.dataset.tip === "custom") {
           // Show the custom box and use whatever is typed in it
-          customTip.hidden = false;
+          customRow.hidden = false;
           customTip.focus();
           tipPercent = Number(customTip.value) || 0;
         } else {
-          customTip.hidden = true;
+          customRow.hidden = true;
           tipPercent = Number(button.dataset.tip);
         }
         calculate();
@@ -140,6 +239,7 @@
       document.getElementById("total").textContent = total.toFixed(2);
       document.getElementById("roundingExtra").textContent = roundingExtra.toFixed(2);
       document.getElementById("perPerson").textContent = perPerson;
+      document.getElementById("tableFor").textContent = "~ table for " + people + " ~";
     }
   </script>
 
