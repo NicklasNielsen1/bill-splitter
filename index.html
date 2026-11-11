@@ -37,7 +37,7 @@
     .tip-buttons { display: flex; gap: 8px; }
     .tip-buttons button {
       flex: 1;
-      font-size: 1rem;
+      font-size: 0.95rem;
       padding: 10px 0;
       border: 1px solid #ccc;
       border-radius: 8px;
@@ -49,6 +49,7 @@
       color: white;
       border-color: #2f6b4f;
     }
+    #customTip { margin-top: 8px; }
     .results {
       margin-top: 24px;
       padding: 16px;
@@ -74,7 +75,9 @@
       <button data-tip="10" class="selected">10%</button>
       <button data-tip="15">15%</button>
       <button data-tip="20">20%</button>
+      <button data-tip="custom">Custom</button>
     </div>
+    <input id="customTip" type="number" min="0" step="0.5" placeholder="Tip % (e.g. 12)" hidden>
 
     <label for="people">Number of people</label>
     <input id="people" type="number" min="1" step="1" value="2">
@@ -89,15 +92,31 @@
   <!-- SCRIPT: what the page does (the calculation) -->
   <script>
     let tipPercent = 10;
+    const customTip = document.getElementById("customTip");
 
     // When a tip button is clicked: remember its value and highlight it
     document.querySelectorAll(".tip-buttons button").forEach(function (button) {
       button.addEventListener("click", function () {
         document.querySelectorAll(".tip-buttons button").forEach(b => b.classList.remove("selected"));
         button.classList.add("selected");
-        tipPercent = Number(button.dataset.tip);
+
+        if (button.dataset.tip === "custom") {
+          // Show the custom box and use whatever is typed in it
+          customTip.hidden = false;
+          customTip.focus();
+          tipPercent = Number(customTip.value) || 0;
+        } else {
+          customTip.hidden = true;
+          tipPercent = Number(button.dataset.tip);
+        }
         calculate();
       });
+    });
+
+    // Typing in the custom box updates the tip right away
+    customTip.addEventListener("input", function () {
+      tipPercent = Number(customTip.value) || 0;
+      calculate();
     });
 
     // Recalculate every time the user types
