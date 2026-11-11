@@ -85,7 +85,8 @@
     <div class="results">
       <div class="row"><span>Tip</span><span id="tipAmount">0.00</span></div>
       <div class="row"><span>Total</span><span id="total">0.00</span></div>
-      <div class="row per-person"><span>Each pays</span><span id="perPerson">0.00</span></div>
+      <div class="row"><span>Extra from rounding up</span><span id="roundingExtra">0.00</span></div>
+      <div class="row per-person"><span>Each pays</span><span id="perPerson">0</span></div>
     </div>
   </div>
 
@@ -129,11 +130,16 @@
 
       const tip = bill * tipPercent / 100;
       const total = bill + tip;
-      const perPerson = total / people;
+      // Round each share UP to a whole number. Rounding to cents first stops
+      // tiny computer math errors (like 168.0000001) from adding an extra 1.
+      const exactShare = Math.round(total / people * 100) / 100;
+      const perPerson = Math.ceil(exactShare);
+      const roundingExtra = perPerson * people - total;
 
       document.getElementById("tipAmount").textContent = tip.toFixed(2);
       document.getElementById("total").textContent = total.toFixed(2);
-      document.getElementById("perPerson").textContent = perPerson.toFixed(2);
+      document.getElementById("roundingExtra").textContent = roundingExtra.toFixed(2);
+      document.getElementById("perPerson").textContent = perPerson;
     }
   </script>
 
