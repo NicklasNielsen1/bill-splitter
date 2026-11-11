@@ -102,7 +102,7 @@
 
     /* Tip buttons: small outlined "stamps"; the chosen one is filled with ink */
     .tip-buttons { display: flex; gap: 6px; margin-top: 8px; }
-    .tip-buttons button {
+    .tip-buttons button, .reset-button {
       flex: 1;
       font: inherit;
       font-size: 0.85rem;
@@ -115,7 +115,10 @@
       border-radius: 2px;
       cursor: pointer;
     }
-    .tip-buttons button:hover { background: rgba(0, 0, 0, 0.06); }
+    .tip-buttons button:hover, .reset-button:hover { background: rgba(0, 0, 0, 0.06); }
+
+    /* "New bill" button: same stamp look as the tip buttons, but full width */
+    .reset-button { display: block; width: 100%; margin-top: 14px; }
     .tip-buttons button.selected { background: var(--ink); color: var(--paper); }
 
     .custom-row { justify-content: flex-end; }
@@ -179,6 +182,8 @@
 
       <div class="row per-person"><span>Each pays</span><span class="leader"></span><span id="perPerson">0</span></div>
 
+      <button id="resetButton" class="reset-button">New bill</button>
+
       <div class="thanks">Thank you!</div>
       <div class="small-print">Shares rounded up to whole numbers</div>
     </div>
@@ -222,6 +227,22 @@
     // Recalculate every time the user types
     document.getElementById("bill").addEventListener("input", calculate);
     document.getElementById("people").addEventListener("input", calculate);
+
+    // "New bill" button: put everything back to how the page starts
+    document.getElementById("resetButton").addEventListener("click", function () {
+      document.getElementById("bill").value = "";
+      document.getElementById("people").value = 2;
+      customTip.value = "";
+      customRow.hidden = true;
+
+      tipPercent = 10;
+      document.querySelectorAll(".tip-buttons button").forEach(function (b) {
+        b.classList.toggle("selected", b.dataset.tip === "10");
+      });
+
+      calculate();
+      document.getElementById("bill").focus();
+    });
 
     function calculate() {
       const bill = Number(document.getElementById("bill").value) || 0;
